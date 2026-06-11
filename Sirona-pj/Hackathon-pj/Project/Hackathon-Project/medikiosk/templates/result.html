@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="flex flex-col items-center justify-center h-full gap-6 px-8 py-4">
+
+  <!-- ESI badge -->
+  <div class="w-36 h-36 rounded-3xl flex flex-col items-center justify-center border-2 transition-all"
+       style="background:{{ esi.bg }};border-color:{{ esi.color }};box-shadow:0 0 40px {{ esi.color }}40">
+    <span class="text-5xl font-black" style="color:{{ esi.color }}">ESI {{ esi.level }}</span>
+    <span class="text-sm mt-1 font-medium" style="color:{{ esi.color }}">{{ esi.label }}</span>
+  </div>
+
+  <div class="text-center max-w-md">
+    <h1 class="text-2xl font-bold mb-3">Assessment Complete</h1>
+    <p class="text-slate-300 text-lg leading-relaxed">{{ esi.description }}</p>
+  </div>
+
+  <!-- Queue + wait -->
+  <div class="flex items-center gap-6 bg-white/5 border border-white/10 rounded-2xl px-8 py-5">
+    <div class="text-center">
+      <p class="text-xs text-slate-400 uppercase tracking-widest">Queue Position</p>
+      <p class="text-4xl font-black text-white">#{{ esi.queue_position }}</p>
+    </div>
+    <div class="w-px h-12 bg-white/10"></div>
+    <div class="text-center">
+      <p class="text-xs text-slate-400 uppercase tracking-widest">Est. Wait</p>
+      <p class="text-2xl font-bold text-white">{{ esi.wait }}</p>
+    </div>
+  </div>
+
+  <!-- Facility notice -->
+  <div class="flex items-center gap-3 bg-amber-500/10 border border-amber-500/20 rounded-xl px-5 py-3 max-w-md">
+    <span class="text-amber-400 text-xl shrink-0">⚕️</span>
+    <p class="text-sm text-amber-200">
+      This is a preliminary AI-assisted triage result. Your information has been forwarded to the facility for care coordination.
+    </p>
+  </div>
+
+  <!-- Auto-reset countdown -->
+  <div class="text-center">
+    <p class="text-slate-500 text-sm">
+      Screen resets in <span id="countdown" class="text-white font-bold">30</span>s
+    </p>
+    <a href="/" class="inline-block mt-3 px-8 py-3 rounded-xl bg-white/10 hover:bg-white/20 text-white text-sm transition-colors">
+      Start New Session
+    </a>
+  </div>
+</div>
+
+<script>
+let t = 30;
+const el = document.getElementById('countdown');
+const iv = setInterval(() => {
+  t--;
+  el.textContent = t;
+  if (t <= 0) { clearInterval(iv); window.location.href = '/'; }
+}, 1000);
+</script>
+{% endblock %}

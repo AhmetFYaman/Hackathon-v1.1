@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="flex flex-col items-center justify-center h-full gap-8 px-8 py-6">
+
+  <div class="text-center">
+    <p class="text-sky-400 text-sm font-semibold uppercase tracking-widest mb-2">Quick Demo</p>
+    <h1 id="tut-title" class="text-3xl font-bold">Select Where It Hurts</h1>
+    <p id="tut-desc" class="text-slate-400 mt-3 text-lg max-w-md">
+      Tap any area on the body diagram to mark pain. You can select multiple areas.
+    </p>
+  </div>
+
+  <!-- Visual area -->
+  <div id="visual" class="flex items-center justify-center h-48 w-full">
+    <!-- Step 0: tap demo -->
+    <div id="v0" class="relative w-64 h-48 flex items-center justify-center">
+      <svg viewBox="0 0 80 140" class="h-40 fill-current text-slate-600 opacity-40">
+        <ellipse cx="40" cy="12" rx="10" ry="12"/>
+        <rect x="28" y="24" width="24" height="36" rx="4"/>
+        <rect x="14" y="26" width="12" height="28" rx="4"/>
+        <rect x="54" y="26" width="12" height="28" rx="4"/>
+        <rect x="28" y="60" width="10" height="38" rx="4"/>
+        <rect x="42" y="60" width="10" height="38" rx="4"/>
+        <rect x="26" y="98" width="10" height="28" rx="4"/>
+        <rect x="44" y="98" width="10" height="28" rx="4"/>
+      </svg>
+      <div class="absolute" style="top:44%;left:46%">
+        <div class="absolute w-10 h-10 rounded-full border-2 border-sky-400 animate-ping opacity-60"
+             style="transform:translate(-50%,-50%)"></div>
+        <div class="w-5 h-5 rounded-full bg-sky-400/80" style="transform:translate(-50%,-50%)"></div>
+      </div>
+      <div class="absolute tutorial-hand" style="top:38%;left:50%">
+        <svg class="w-12 h-12 drop-shadow-xl" viewBox="0 0 48 48" fill="none">
+          <path d="M16 34V16a3 3 0 016 0v10" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M22 22a3 3 0 016 0v4" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M28 24a3 3 0 016 0v6" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M34 28v2a8 8 0 01-8 8h-4a8 8 0 01-8-8v-4" stroke="white" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+    </div>
+
+    <!-- Step 1: pain scale demo -->
+    <div id="v1" class="hidden flex-col items-center gap-4">
+      <div class="flex gap-3" id="face-demo">
+        <button onclick="demoFace(this,0)"  class="text-3xl transition-all opacity-40 scale-100">😊</button>
+        <button onclick="demoFace(this,1)"  class="text-3xl transition-all opacity-40 scale-100">🙂</button>
+        <button onclick="demoFace(this,2)"  class="text-3xl transition-all scale-150">😐</button>
+        <button onclick="demoFace(this,3)"  class="text-3xl transition-all opacity-40 scale-100">😕</button>
+        <button onclick="demoFace(this,4)"  class="text-3xl transition-all opacity-40 scale-100">😣</button>
+        <button onclick="demoFace(this,5)"  class="text-3xl transition-all opacity-40 scale-100">😭</button>
+      </div>
+      <p class="text-sky-400 text-sm">Tap to try it</p>
+    </div>
+
+    <!-- Step 2: remove demo -->
+    <div id="v2" class="hidden flex-col items-center gap-4">
+      <button id="toggle-btn" onclick="toggleDemo()"
+              class="w-16 h-16 rounded-full border-2 text-2xl transition-all duration-300 bg-rose-500/40 border-rose-400 scale-110">
+        🔴
+      </button>
+      <p class="text-sky-400 text-sm">Tap to toggle</p>
+    </div>
+  </div>
+
+  <!-- Step dots -->
+  <div class="flex gap-2" id="dots">
+    <div class="h-2 rounded-full bg-white w-6 transition-all"></div>
+    <div class="h-2 rounded-full bg-white/20 w-2 transition-all"></div>
+    <div class="h-2 rounded-full bg-white/20 w-2 transition-all"></div>
+  </div>
+
+  <button id="next-btn" onclick="nextStep()"
+          class="px-12 py-5 rounded-2xl bg-sky-500 hover:bg-sky-400 text-white font-bold text-xl transition-colors">
+    Next →
+  </button>
+
+  <a href="/bodymap" class="text-slate-500 text-sm underline">Skip tutorial</a>
+</div>
+
+<script>
+const steps = [
+  { title: "Select Where It Hurts",
+    desc:  "Tap any area on the body diagram to mark pain. You can select multiple areas.",
+    visual: "v0" },
+  { title: "Rate Your Pain",
+    desc:  "After selecting an area, use the smiley face scale to rate how much it hurts.",
+    visual: "v1" },
+  { title: "Tap Again to Remove",
+    desc:  "Changed your mind? Tap a highlighted area again to remove it.",
+    visual: "v2" },
+];
+let step = 0;
+
+function nextStep() {
+  step++;
+  if (step >= steps.length) { window.location.href = '/bodymap'; return; }
+  document.getElementById('tut-title').textContent = steps[step].title;
+  document.getElementById('tut-desc').textContent  = steps[step].desc;
+  ['v0','v1','v2'].forEach(id => {
+    const el = document.getElementById(id);
+    el.classList.add('hidden');
+    el.classList.remove('flex');
+  });
+  const vis = document.getElementById(steps[step].visual);
+  vis.classList.remove('hidden');
+  vis.classList.add('flex');
+  document.querySelectorAll('#dots > div').forEach((d,i) => {
+    d.className = `h-2 rounded-full transition-all ${i===step?'bg-white w-6':'bg-white/20 w-2'}`;
+  });
+  if (step === steps.length-1) document.getElementById('next-btn').textContent = 'Got it — Start →';
+}
+
+function demoFace(btn, idx) {
+  document.querySelectorAll('#face-demo button').forEach((b,i) => {
+    b.className = `text-3xl transition-all ${i===idx?'scale-150 opacity-100':'opacity-40 scale-100'}`;
+  });
+}
+
+let toggleOn = true;
+function toggleDemo() {
+  toggleOn = !toggleOn;
+  const btn = document.getElementById('toggle-btn');
+  btn.textContent = toggleOn ? '🔴' : '⬜';
+  btn.className = `w-16 h-16 rounded-full border-2 text-2xl transition-all duration-300 ${
+    toggleOn ? 'bg-rose-500/40 border-rose-400 scale-110' : 'bg-white/5 border-white/20 scale-100 opacity-50'}`;
+}
+</script>
+{% endblock %}

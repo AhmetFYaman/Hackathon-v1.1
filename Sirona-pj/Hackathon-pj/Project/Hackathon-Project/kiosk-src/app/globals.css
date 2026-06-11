@@ -1,0 +1,57 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --kiosk-blue: #0ea5e9;
+  --kiosk-green: #22c55e;
+  --kiosk-red: #ef4444;
+  --kiosk-amber: #f59e0b;
+}
+
+/* Touch-optimized base */
+* {
+  -webkit-tap-highlight-color: transparent;
+  user-select: none;
+}
+
+html, body {
+  height: 100%;
+  overflow: hidden;
+}
+
+/* Smooth screen transitions */
+.screen-enter {
+  animation: slideUp 0.35s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Pain region pulse */
+@keyframes regionPulse {
+  0%, 100% { opacity: 0.7; }
+  50% { opacity: 1; }
+}
+
+.region-selected {
+  animation: regionPulse 1.8s ease-in-out infinite;
+}
+
+/* Tutorial hand */
+@keyframes tapDemo {
+  0%   { transform: translate(0, 0) scale(1); opacity: 0.9; }
+  30%  { transform: translate(0, 0) scale(0.88); opacity: 1; }
+  50%  { transform: translate(60px, 30px) scale(1); opacity: 0.9; }
+  80%  { transform: translate(60px, 30px) scale(0.88); opacity: 1; }
+  100% { transform: translate(0, 0) scale(1); opacity: 0.9; }
+}
+
+.tutorial-hand {
+  animation: tapDemo 2.8s ease-in-out infinite;
+}
+
+/* Scrollbar hidden */
+::-webkit-scrollbar { display: none; }

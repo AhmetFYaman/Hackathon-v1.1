@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="flex flex-col h-full px-8 py-6 gap-6">
+
+  <div class="text-center">
+    <h1 class="text-3xl font-bold">Collecting Your Vitals</h1>
+    <p class="text-slate-400 mt-2">Please keep your finger on the sensor and stay still</p>
+    <p id="mock-notice" class="hidden text-amber-400 text-xs mt-1">⚠ Sensor not detected — using simulated data</p>
+  </div>
+
+  <!-- Pulse animation -->
+  <div class="flex justify-center">
+    <div class="relative w-24 h-24">
+      <div class="absolute inset-0 rounded-full border-4 border-sky-500/30 animate-ping"></div>
+      <div class="absolute inset-2 rounded-full border-2 border-sky-500/50 animate-pulse"></div>
+      <div class="absolute inset-4 rounded-full bg-sky-500/20 flex items-center justify-center">
+        <svg class="w-8 h-8 text-sky-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- Vital cards -->
+  <div class="flex gap-4">
+    <!-- Heart Rate -->
+    <div id="card-hr" class="flex-1 rounded-2xl p-6 border border-white/10 bg-white/5 transition-all duration-700">
+      <div class="flex items-center gap-3 mb-4">
+        <svg class="w-6 h-6 text-sky-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M21 8.25c0-2.485-2.099-4.5-4.688-4.5-1.935 0-3.597 1.126-4.312 2.733-.715-1.607-2.377-2.733-4.313-2.733C5.1 3.75 3 5.765 3 8.25c0 7.22 9 12 9 12s9-4.78 9-12z"/>
+        </svg>
+        <span class="text-sm font-medium text-slate-400 uppercase tracking-widest">Heart Rate</span>
+      </div>
+      <div id="hr-val" class="flex items-end gap-2 h-14">
+        <div class="flex gap-1.5 items-center">
+          <div class="w-2 h-2 rounded-full bg-sky-500 animate-bounce" style="animation-delay:0s"></div>
+          <div class="w-2 h-2 rounded-full bg-sky-500 animate-bounce" style="animation-delay:.15s"></div>
+          <div class="w-2 h-2 rounded-full bg-sky-500 animate-bounce" style="animation-delay:.3s"></div>
+          <span class="ml-2 text-slate-400">Measuring…</span>
+        </div>
+      </div>
+      <p class="text-xs text-slate-600 mt-2">Normal: 60–100 BPM</p>
+    </div>
+
+    <!-- SpO2 -->
+    <div id="card-spo2" class="flex-1 rounded-2xl p-6 border border-white/10 bg-white/5 transition-all duration-700">
+      <div class="flex items-center gap-3 mb-4">
+        <svg class="w-6 h-6 text-sky-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z"/>
+        </svg>
+        <span class="text-sm font-medium text-slate-400 uppercase tracking-widest">SpO2</span>
+      </div>
+      <div id="spo2-val" class="flex items-end gap-2 h-14">
+        <div class="flex gap-1.5 items-center">
+          <div class="w-2 h-2 rounded-full bg-sky-500 animate-bounce" style="animation-delay:0s"></div>
+          <div class="w-2 h-2 rounded-full bg-sky-500 animate-bounce" style="animation-delay:.15s"></div>
+          <div class="w-2 h-2 rounded-full bg-sky-500 animate-bounce" style="animation-delay:.3s"></div>
+          <span class="ml-2 text-slate-400">Measuring…</span>
+        </div>
+      </div>
+      <p class="text-xs text-slate-600 mt-2">Normal: 95–100%</p>
+    </div>
+
+    <!-- Temperature -->
+    <div id="card-temp" class="flex-1 rounded-2xl p-6 border border-white/10 bg-white/5 transition-all duration-700">
+      <div class="flex items-center gap-3 mb-4">
+        <svg class="w-6 h-6 text-sky-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.5">
+          <path stroke-linecap="round" stroke-linejoin="round"
+            d="M15.362 5.214A8.252 8.252 0 0112 21 8.25 8.25 0 016.038 7.048 8.287 8.287 0 009 9.6a8.983 8.983 0 013.361-6.867 8.21 8.21 0 003 2.48z"/>
+        </svg>
+        <span class="text-sm font-medium text-slate-400 uppercase tracking-widest">Temperature</span>
+      </div>
+      <div id="temp-val" class="flex items-end gap-2 h-14">
+        <div class="flex gap-1.5 items-center">
+          <div class="w-2 h-2 rounded-full bg-sky-500 animate-bounce" style="animation-delay:0s"></div>
+          <div class="w-2 h-2 rounded-full bg-sky-500 animate-bounce" style="animation-delay:.15s"></div>
+          <div class="w-2 h-2 rounded-full bg-sky-500 animate-bounce" style="animation-delay:.3s"></div>
+          <span class="ml-2 text-slate-400">Measuring…</span>
+        </div>
+      </div>
+      <p class="text-xs text-slate-600 mt-2">Normal: 97–99°F</p>
+    </div>
+  </div>
+
+  <!-- Continue button (hidden until all vitals ready) -->
+  <div class="flex justify-center">
+    <a id="continue-btn" href="/tutorial"
+       class="hidden px-12 py-5 rounded-2xl bg-sky-500 hover:bg-sky-400 text-white font-bold text-xl transition-colors">
+      Continue →
+    </a>
+    <p id="waiting-msg" class="text-slate-500 text-sm">Waiting for sensor readings…</p>
+  </div>
+</div>
+
+<script>
+const done = {hr: false, spo2: false, temp: false};
+let noDataCount = 0;
+
+function setReady(cardId, displayEl, value, unit) {
+  displayEl.innerHTML = `<span class="text-5xl font-bold text-white">${value}</span><span class="text-lg text-slate-400 mb-1 ml-2">${unit}</span>`;
+  document.getElementById(cardId).classList.replace('border-white/10','border-sky-500/40');
+  document.getElementById(cardId).classList.replace('bg-white/5','bg-white/10');
+}
+
+function checkAllDone() {
+  if (done.hr && done.spo2 && done.temp) {
+    document.getElementById('continue-btn').classList.remove('hidden');
+    document.getElementById('waiting-msg').style.display = 'none';
+    clearInterval(pollInterval);
+  }
+}
+
+async function poll() {
+  try {
+    const r    = await fetch('/api/vitals');
+    const data = await r.json();
+    const any  = data.heartRate != null || data.spO2 != null || data.temperature != null;
+
+    if (any) {
+      noDataCount = 0;
+      document.getElementById('mock-notice').classList.add('hidden');
+    } else {
+      noDataCount++;
+      if (noDataCount >= 8) {
+        document.getElementById('mock-notice').classList.remove('hidden');
+      }
+    }
+
+    if (data.heartRate != null && !done.hr) {
+      done.hr = true;
+      setReady('card-hr', document.getElementById('hr-val'), data.heartRate, 'BPM');
+    }
+    if (data.spO2 != null && !done.spo2) {
+      done.spo2 = true;
+      setReady('card-spo2', document.getElementById('spo2-val'), data.spO2, '%');
+    }
+    if (data.temperature != null && !done.temp) {
+      done.temp = true;
+      setReady('card-temp', document.getElementById('temp-val'), data.temperature, '°F');
+    }
+    checkAllDone();
+  } catch(e) {}
+}
+
+const pollInterval = setInterval(poll, 1000);
+poll();
+</script>
+{% endblock %}

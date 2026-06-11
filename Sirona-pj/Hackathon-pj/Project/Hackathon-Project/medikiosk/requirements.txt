@@ -1,0 +1,19 @@
+flask>=3.0
+
+# Camera + facial analysis (install when Pi camera is connected)
+# picamera2
+# opencv-python
+# mediapipe
+
+# MAX30100 pulse + SpO2 sensor
+# max30100
+
+# MAX30102 pulse + SpO2 sensor (raw I2C)
+# smbus2
+# heartpy
+
+# DS18B20 temperature sensor (1-Wire)
+# w1thermsensor
+
+# MLX90614 infrared temperature sensor (I2C)
+# adafruit-circuitpython-mlx90614

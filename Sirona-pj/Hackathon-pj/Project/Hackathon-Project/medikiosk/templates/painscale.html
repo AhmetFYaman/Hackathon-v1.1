@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="flex flex-col items-center justify-center h-full gap-6 px-8 py-4">
+
+  {% if regions %}
+  <!-- Region header -->
+  <div class="text-center">
+    <p id="area-counter" class="text-sky-400 text-sm uppercase tracking-widest mb-1">
+      Area 1 of {{ regions|length }}
+    </p>
+    <h1 id="area-name" class="text-3xl font-bold">{{ regions[0].label }}</h1>
+    <p class="text-slate-400 mt-2">How much does this area hurt right now?</p>
+  </div>
+
+  <!-- Big selected face -->
+  <div id="big-face"
+       class="w-28 h-28 rounded-full flex items-center justify-center text-6xl transition-all duration-300"
+       style="background:rgba(255,255,255,0.04);border:2px solid rgba(255,255,255,0.1)">
+    ❓
+  </div>
+
+  <!-- Face buttons -->
+  <div class="flex gap-3 flex-wrap justify-center">
+    {% set faces = [
+      ("😊","No Pain",    0, "#22c55e"),
+      ("🙂","Very Mild",  2, "#86efac"),
+      ("😐","Mild",       4, "#facc15"),
+      ("😕","Moderate",   6, "#fb923c"),
+      ("😣","Severe",     8, "#ef4444"),
+      ("😭","Worst",     10, "#7f1d1d")
+    ] %}
+    {% for emoji, label, value, color in faces %}
+    <button onclick="selectFace({{ loop.index0 }}, {{ value }}, '{{ color }}', '{{ emoji }}')"
+            data-idx="{{ loop.index0 }}"
+            class="face-btn flex flex-col items-center gap-1.5 p-3 rounded-2xl border border-white/10 bg-white/5 hover:bg-white/10 transition-all active:scale-90">
+      <span class="text-4xl leading-none">{{ emoji }}</span>
+      <span class="text-xs text-slate-400">{{ label }}</span>
+      <span class="text-xs font-bold" style="color:{{ color }}">{{ value }}</span>
+    </button>
+    {% endfor %}
+  </div>
+
+  <!-- Pain bar -->
+  <div id="pain-bar-wrap" class="hidden flex items-center gap-2">
+    <div id="pain-bar" class="h-2 rounded-full transition-all duration-500" style="width:0;background:#22c55e"></div>
+    <span id="pain-score" class="text-sm font-bold text-white">0/10</span>
+  </div>
+
+  <!-- Step dots -->
+  {% if regions|length > 1 %}
+  <div class="flex gap-2" id="step-dots">
+    {% for r in regions %}
+    <div class="h-2 rounded-full transition-all {{ 'bg-white w-4' if loop.first else 'bg-white/20 w-2' }}"></div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
+  <button id="confirm-btn" onclick="confirm()" disabled
+          class="px-14 py-5 rounded-2xl bg-sky-500 text-white font-bold text-xl transition-all opacity-40 cursor-not-allowed">
+    {% if regions|length > 1 %}Next Area →{% else %}Submit →{% endif %}
+  </button>
+
+  {% else %}
+  <!-- No regions — redirect immediately -->
+  <p class="text-slate-400">No pain areas selected.</p>
+  <a href="/processing" class="px-10 py-4 rounded-2xl bg-sky-500 text-white font-bold text-lg">Continue →</a>
+  {% endif %}
+</div>
+
+<script>
+const regions  = {{ regions | tojson }};
+let current    = 0;
+let painLevels = {};  // id → painLevel
+let pickedValue = null;
+
+function selectFace(idx, value, color, emoji) {
+  pickedValue = value;
+  document.querySelectorAll('.face-btn').forEach((b, i) => {
+    if (i === idx) {
+      b.style.background   = color + '30';
+      b.style.borderColor  = color;
+      b.style.boxShadow    = `0 0 20px ${color}50`;
+      b.style.transform    = 'scale(1.1)';
+    } else {
+      b.style.background   = '';
+      b.style.borderColor  = '';
+      b.style.boxShadow    = '';
+      b.style.transform    = '';
+    }
+  });
+  // Big face
+  const face = document.getElementById('big-face');
+  face.textContent   = emoji;
+  face.style.background   = color + '22';
+  face.style.borderColor  = color;
+
+  // Bar
+  const bar = document.getElementById('pain-bar');
+  bar.style.width      = `${(value/10)*260}px`;
+  bar.style.background = `linear-gradient(to right,#22c55e,${color})`;
+  document.getElementById('pain-score').textContent = `${value}/10`;
+  document.getElementById('pain-bar-wrap').classList.remove('hidden');
+
+  // Enable confirm
+  const btn = document.getElementById('confirm-btn');
+  btn.disabled = false;
+  btn.classList.remove('opacity-40','cursor-not-allowed');
+}
+
+function confirm() {
+  if (pickedValue === null || !regions[current]) return;
+  painLevels[regions[current].id] = pickedValue;
+
+  if (current < regions.length - 1) {
+    current++;
+    pickedValue = null;
+    // Update UI for next region
+    document.getElementById('area-counter').textContent = `Area ${current+1} of ${regions.length}`;
+    document.getElementById('area-name').textContent    = regions[current].label;
+    document.getElementById('big-face').textContent     = '❓';
+    document.getElementById('big-face').style.background   = 'rgba(255,255,255,0.04)';
+    document.getElementById('big-face').style.borderColor  = 'rgba(255,255,255,0.1)';
+    document.getElementById('pain-bar-wrap').classList.add('hidden');
+    document.querySelectorAll('.face-btn').forEach(b => {
+      b.style.background = ''; b.style.borderColor = '';
+      b.style.boxShadow  = ''; b.style.transform   = '';
+    });
+    const btn = document.getElementById('confirm-btn');
+    btn.disabled = true;
+    btn.classList.add('opacity-40','cursor-not-allowed');
+    if (current === regions.length - 1) btn.textContent = 'Submit →';
+    // Update dots
+    document.querySelectorAll('#step-dots > div').forEach((d,i) => {
+      d.className = `h-2 rounded-full transition-all ${i < current ? 'bg-sky-500 w-6' : i === current ? 'bg-white w-4' : 'bg-white/20 w-2'}`;
+    });
+  } else {
+    // All done — save and continue
+    const final = regions.map(r => ({...r, painLevel: painLevels[r.id] ?? r.painLevel ?? 5}));
+    fetch('/painscale', {
+      method: 'POST',
+      headers: {'Content-Type':'application/json'},
+      body: JSON.stringify(final)
+    }).then(() => window.location.href = '/processing');
+  }
+}
+</script>
+{% endblock %}

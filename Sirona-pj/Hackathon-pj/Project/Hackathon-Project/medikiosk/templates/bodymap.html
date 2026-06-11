@@ -1,0 +1,159 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="flex h-full gap-4 px-6 py-4">
+
+  <!-- Left: instructions + selected list -->
+  <div class="flex flex-col gap-4 w-56 shrink-0">
+    <div>
+      <h1 class="text-2xl font-bold">Where does it hurt?</h1>
+      <p class="text-slate-400 text-sm mt-1">Tap any area on the body. Select as many as needed.</p>
+    </div>
+
+    <div class="flex items-center gap-2 bg-sky-500/10 border border-sky-500/20 rounded-xl p-3">
+      <span class="text-lg">👆</span>
+      <span class="text-xs text-sky-300">Tap an area to select. Tap again to remove.</span>
+    </div>
+
+    <!-- Selected regions list -->
+    <div class="flex-1 overflow-y-auto" id="region-list">
+      <p class="text-slate-600 text-sm italic">No areas selected yet</p>
+    </div>
+
+    <div class="flex flex-col gap-2">
+      <button id="continue-btn" onclick="goNext()" disabled
+              class="py-4 rounded-2xl bg-sky-500 text-white font-bold text-lg transition-all opacity-40 cursor-not-allowed">
+        Rate Pain →
+      </button>
+      <button onclick="skipPain()" class="text-slate-500 text-sm underline text-center">
+        I have no pain — skip
+      </button>
+    </div>
+  </div>
+
+  <!-- Right: SVG body map -->
+  <div class="flex-1 flex items-center justify-center">
+    <svg id="body-svg" viewBox="0 0 100 225" class="w-full max-w-xs h-full"
+         style="filter:drop-shadow(0 0 20px rgba(14,165,233,0.12))">
+
+      <!-- Each path has data-id and data-label -->
+      <path data-id="head-front"   data-label="Head"          d="M40,4 Q50,0 60,4 Q68,8 68,20 Q68,36 50,38 Q32,36 32,20 Q32,8 40,4Z"/>
+      <path data-id="neck-front"   data-label="Neck"          d="M44,38 Q50,36 56,38 L57,47 Q50,49 43,47Z"/>
+      <path data-id="chest-left"   data-label="Left Chest"    d="M43,49 Q37,52 26,54 Q20,56 18,65 Q16,74 20,78 L30,78 L38,80 L43,72Z"/>
+      <path data-id="chest-right"  data-label="Right Chest"   d="M57,49 Q63,52 74,54 Q80,56 82,65 Q84,74 80,78 L70,78 L62,80 L57,72Z"/>
+      <path data-id="abdomen"      data-label="Abdomen"       d="M38,80 Q50,82 62,80 L64,102 Q50,106 36,102Z"/>
+      <path data-id="pelvis-front" data-label="Pelvis"        d="M36,102 Q50,106 64,102 L66,116 Q50,120 34,116Z"/>
+      <path data-id="l-shoulder"   data-label="L. Shoulder"   d="M26,54 Q18,56 14,62 L18,68 Q22,65 26,62Z"/>
+      <path data-id="r-shoulder"   data-label="R. Shoulder"   d="M74,54 Q82,56 86,62 L82,68 Q78,65 74,62Z"/>
+      <path data-id="l-arm"        data-label="L. Upper Arm"  d="M14,62 Q8,68 6,82 L12,84 Q16,72 18,68Z"/>
+      <path data-id="r-arm"        data-label="R. Upper Arm"  d="M86,62 Q92,68 94,82 L88,84 Q84,72 82,68Z"/>
+      <path data-id="l-forearm"    data-label="L. Forearm"    d="M6,82 Q3,96 4,108 L10,108 Q10,96 12,84Z"/>
+      <path data-id="r-forearm"    data-label="R. Forearm"    d="M94,82 Q97,96 96,108 L90,108 Q90,96 88,84Z"/>
+      <path data-id="l-hand"       data-label="L. Hand"       d="M4,108 Q2,116 4,120 Q6,122 10,120 L10,108Z"/>
+      <path data-id="r-hand"       data-label="R. Hand"       d="M96,108 Q98,116 96,120 Q94,122 90,120 L90,108Z"/>
+      <path data-id="l-thigh"      data-label="L. Thigh"      d="M36,116 Q34,130 33,152 L42,154 Q42,130 43,116Z"/>
+      <path data-id="r-thigh"      data-label="R. Thigh"      d="M64,116 Q66,130 67,152 L58,154 Q58,130 57,116Z"/>
+      <path data-id="l-knee"       data-label="L. Knee"       d="M33,152 Q32,162 33,170 L42,170 Q43,162 42,154Z"/>
+      <path data-id="r-knee"       data-label="R. Knee"       d="M67,152 Q68,162 67,170 L58,170 Q57,162 58,154Z"/>
+      <path data-id="l-shin"       data-label="L. Shin"       d="M33,170 Q32,188 33,200 L41,200 Q41,188 42,170Z"/>
+      <path data-id="r-shin"       data-label="R. Shin"       d="M67,170 Q68,188 67,200 L59,200 Q59,188 58,170Z"/>
+      <path data-id="l-foot"       data-label="L. Foot"       d="M33,200 Q30,208 31,214 Q34,218 40,216 L41,200Z"/>
+      <path data-id="r-foot"       data-label="R. Foot"       d="M67,200 Q70,208 69,214 Q66,218 60,216 L59,200Z"/>
+    </svg>
+  </div>
+</div>
+
+<style>
+  #body-svg path {
+    fill: rgba(148,163,184,0.18);
+    stroke: rgba(148,163,184,0.35);
+    stroke-width: 0.6;
+    cursor: pointer;
+    transition: fill 0.3s, filter 0.3s;
+  }
+  #body-svg path.selected {
+    animation: regionPulse 1.8s ease-in-out infinite;
+  }
+</style>
+
+<script>
+const PAIN_COLORS = [
+  '#22c55e','#4ade80','#a3e635','#facc15','#fb923c',
+  '#f97316','#ef4444','#dc2626','#b91c1c','#991b1b','#7f1d1d'
+];
+const selected = {};   // id → {id, label, painLevel:5}
+
+document.querySelectorAll('#body-svg path').forEach(path => {
+  const id    = path.dataset.id;
+  const label = path.dataset.label;
+
+  path.addEventListener('click', () => {
+    if (selected[id]) {
+      delete selected[id];
+      path.style.fill   = 'rgba(148,163,184,0.18)';
+      path.style.filter = 'none';
+      path.classList.remove('selected');
+    } else {
+      selected[id] = {id, label, painLevel: 5};
+      const col = PAIN_COLORS[5];
+      path.style.fill   = col + '80';
+      path.style.filter = `drop-shadow(0 0 4px ${col})`;
+      path.classList.add('selected');
+    }
+    renderList();
+  });
+});
+
+function renderList() {
+  const keys = Object.keys(selected);
+  const list = document.getElementById('region-list');
+  const btn  = document.getElementById('continue-btn');
+
+  if (keys.length === 0) {
+    list.innerHTML = '<p class="text-slate-600 text-sm italic">No areas selected yet</p>';
+    btn.disabled = true;
+    btn.classList.add('opacity-40','cursor-not-allowed');
+  } else {
+    list.innerHTML = keys.map(id => `
+      <div class="flex items-center justify-between bg-white/5 rounded-xl px-3 py-2 mb-2">
+        <div class="flex items-center gap-2">
+          <div class="w-3 h-3 rounded-full" style="background:${PAIN_COLORS[5]}"></div>
+          <span class="text-sm text-white">${selected[id].label}</span>
+        </div>
+        <button onclick="removeRegion('${id}')" class="text-slate-500 hover:text-red-400 text-xs">✕</button>
+      </div>`).join('');
+    btn.disabled = false;
+    btn.classList.remove('opacity-40','cursor-not-allowed');
+  }
+}
+
+function removeRegion(id) {
+  const path = document.querySelector(`[data-id="${id}"]`);
+  if (path) {
+    path.style.fill   = 'rgba(148,163,184,0.18)';
+    path.style.filter = 'none';
+    path.classList.remove('selected');
+  }
+  delete selected[id];
+  renderList();
+}
+
+async function goNext() {
+  const regions = Object.values(selected);
+  await fetch('/bodymap', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify(regions)
+  });
+  window.location.href = '/painscale';
+}
+
+async function skipPain() {
+  await fetch('/bodymap', {
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body: JSON.stringify([])
+  });
+  window.location.href = '/processing';
+}
+</script>
+{% endblock %}

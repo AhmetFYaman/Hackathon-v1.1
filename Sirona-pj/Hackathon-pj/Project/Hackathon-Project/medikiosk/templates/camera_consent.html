@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="flex h-full gap-6 px-8 py-6">
+
+  <!-- Live camera -->
+  <div class="flex flex-col items-center justify-center gap-3 w-80 shrink-0">
+    <div class="relative w-full aspect-video rounded-2xl overflow-hidden bg-slate-900 border border-white/10">
+      <video id="cam" autoplay playsinline muted
+             class="w-full h-full object-cover opacity-0 transition-opacity duration-500"
+             style="transform:scaleX(-1)"></video>
+      <div id="cam-placeholder" class="absolute inset-0 flex items-center justify-center">
+        <div class="w-8 h-8 rounded-full border-2 border-sky-500 border-t-transparent animate-spin"></div>
+      </div>
+      <div id="cam-badge" class="hidden absolute bottom-3 left-1/2 -translate-x-1/2 flex items-center gap-2
+           bg-black/60 backdrop-blur px-3 py-1.5 rounded-full whitespace-nowrap">
+        <div class="w-2 h-2 rounded-full bg-red-400 animate-pulse"></div>
+        <span class="text-xs text-white">LIVE PREVIEW — NOT RECORDED</span>
+      </div>
+    </div>
+    <p class="text-xs text-slate-500 text-center">This is what your camera sees — nothing is being saved</p>
+  </div>
+
+  <!-- Decision -->
+  <div class="flex flex-col justify-center gap-6 flex-1">
+    <div>
+      <p class="text-sky-400 text-sm uppercase tracking-widest mb-1">Optional</p>
+      <h1 class="text-2xl font-bold">Enable AI Facial Analysis?</h1>
+      <p class="text-slate-300 mt-2 leading-relaxed">
+        Our AI can read facial expressions to better estimate your pain level and detect visible symptoms.
+        This is completely optional and will not affect your care.
+      </p>
+    </div>
+
+    <div class="bg-white/5 border border-white/10 rounded-2xl p-4 space-y-2">
+      {% for item in [
+        "No images are saved at any point",
+        "Only a derived distress score (0–10) is recorded",
+        "Camera deactivates immediately after assessment",
+        "Declining has no impact on your care"
+      ] %}
+      <div class="flex gap-2 text-sm text-slate-300">
+        <span class="text-green-400 shrink-0">✓</span>{{ item }}
+      </div>
+      {% endfor %}
+    </div>
+
+    <div class="flex flex-col gap-3">
+      <form method="POST" class="contents">
+        <button name="camera" value="yes" type="submit"
+                class="py-4 rounded-2xl bg-sky-500 hover:bg-sky-400 text-white font-bold text-lg transition-colors">
+          Enable Camera Analysis
+        </button>
+        <button name="camera" value="no" type="submit"
+                class="py-4 rounded-2xl bg-white/10 hover:bg-white/20 text-slate-300 font-semibold text-lg transition-colors">
+          Skip — Continue Without Camera
+        </button>
+      </form>
+    </div>
+  </div>
+</div>
+
+<script>
+(async () => {
+  const video = document.getElementById('cam');
+  const ph    = document.getElementById('cam-placeholder');
+  const badge = document.getElementById('cam-badge');
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({video:{facingMode:'user'},audio:false});
+    video.srcObject = stream;
+    video.onloadedmetadata = () => {
+      video.classList.remove('opacity-0');
+      ph.style.display = 'none';
+      badge.classList.remove('hidden');
+      badge.classList.add('flex');
+    };
+    // Stop preview stream when user submits (Pi takes over)
+    document.querySelectorAll('form button').forEach(btn => {
+      btn.addEventListener('click', () => stream.getTracks().forEach(t => t.stop()));
+    });
+  } catch(e) {
+    ph.innerHTML = `<p class="text-slate-400 text-sm px-4 text-center">Camera active on sensor unit</p>`;
+  }
+})();
+</script>
+{% endblock %}

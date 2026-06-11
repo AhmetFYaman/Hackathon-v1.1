@@ -1,0 +1,50 @@
+# ── Dependencies (reinstall with: npm install) ────────────────────────────────
+node_modules/
+
+# ── Build output / caches ──────────────────────────────────────────────────────
+.next/
+out/
+dist/
+build/
+*.tsbuildinfo
+next-env.d.ts
+
+# ── Python ─────────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+
+# ── Trained models / generated runtime data (rebuild with train_esi.py) ───────
+.runtime/
+*.pkl
+*.onnx
+*.engine
+
+# ── Media captured during testing — never commit patient clips ────────────────
+*.mp4
+*.h264
+*.avi
+
+# ── Generated HL7 output ───────────────────────────────────────────────────────
+*.hl7
+
+# ── Environment / secrets ──────────────────────────────────────────────────────
+.env
+.env.local
+.env.*.local
+
+# ── Editor / OS noise ──────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/
+
+# ── Claude Code local settings ─────────────────────────────────────────────────
+.claude/settings.local.json
+
+# ── Logs ───────────────────────────────────────────────────────────────────────
+*.log
+npm-debug.log*
